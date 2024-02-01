@@ -1,12 +1,10 @@
-"""
-This files creates the X and y features in joblib to be used by the predictive models.
-"""
-
 import os
 import time
 import joblib
 import librosa
 import numpy as np
+from tqdm import tqdm
+from sklearn.preprocessing import StandardScaler
 
 from config import SAVE_DIR_PATH
 from config import TRAINING_FILES_PATH
@@ -16,50 +14,43 @@ class CreateFeatures:
 
     @staticmethod
     def features_creator(path, save_dir) -> str:
-        """
-        This function creates the dataset and saves both data and labels in
-        two files, X.joblib and y.joblib in the joblib_features folder.
-        With this method, you can persist your features and train quickly
-        new machine learning models instead of reloading the features
-        every time with this pipeline.
-        """
-
         lst = []
+        scaler = StandardScaler()  # For normalization
 
         start_time = time.time()
 
+        # Count total number of files
+        total_files = sum([len(files) for r, d, files in os.walk(path)])
+
+        # Start processing with tqdm
+        pbar = tqdm(total=total_files, desc="Processing files")
+        
         for subdir, dirs, files in os.walk(path):
             for file in files:
                 try:
-                    # Load librosa array, obtain mfcss, store the file and the mcss information in a new array
-                    X, sample_rate = librosa.load(os.path.join(subdir, file),
-                                                  res_type='kaiser_fast')
-                    mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate,
-                                                         n_mfcc=40).T, axis=0)
-                    # The instruction below converts the labels (from 1 to 8) to a series from 0 to 7
-                    # This is because our predictor needs to start from 0 otherwise it will try to predict also 0.
+                    X, sample_rate = librosa.load(os.path.join(subdir, file), res_type='kaiser_fast')
+                    mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40)
+                    mfccs_scaled = scaler.fit_transform(mfccs.T)  # Normalizing the MFCCs
+                    mfccs_mean = np.mean(mfccs_scaled, axis=0)
+
                     file = int(file[7:8]) - 1
-                    arr = mfccs, file
+                    arr = mfccs_mean, file
                     lst.append(arr)
-                # If the file is not valid, skip it
                 except ValueError as err:
-                    print(err)
+                    print(f"Error processing {file}: {err}")
                     continue
+                    
+                finally:
+                    pbar.update(1)  # Update progress bar                    
 
         print("--- Data loaded. Loading time: %s seconds ---" % (time.time() - start_time))
 
-        # Creating X and y: zip makes a list of all the first elements, and a list of all the second elements.
         X, y = zip(*lst)
-
-        # Array conversion
         X, y = np.asarray(X), np.asarray(y)
 
-        # Array shape check
         print(X.shape, y.shape)
 
-        # Preparing features dump
         X_name, y_name = 'X.joblib', 'y.joblib'
-
         joblib.dump(X, os.path.join(save_dir, X_name))
         joblib.dump(y, os.path.join(save_dir, y_name))
 

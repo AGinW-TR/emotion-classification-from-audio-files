@@ -5,14 +5,10 @@ import os
 import joblib
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.layers import Dense
-from keras.layers import Conv1D
-from keras.layers import Flatten
-from keras.layers import Dropout
-from keras.layers import Activation
-from keras.models import Sequential
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
+from tensorflow.keras.layers import Dense, Conv1D, Flatten, Dropout, Activation, BatchNormalization
+from tensorflow.keras.models import Sequential
+
+from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 
 
@@ -36,13 +32,17 @@ class TrainModel:
         print(x_traincnn.shape, x_testcnn.shape)
 
         model = Sequential()
-        model.add(Conv1D(64, 5, padding='same',
-                         input_shape=(40, 1)))
-        model.add(Activation('relu'))
+        model.add(Conv1D(64, 5, padding='same', input_shape=(40, 1), activation='relu'))
+        model.add(BatchNormalization())
         model.add(Dropout(0.2))
         model.add(Flatten())
-        model.add(Dense(8))
-        model.add(Activation('softmax'))
+        model.add(Dense(128, activation='relu'))
+        model.add(BatchNormalization())
+        model.add(Dropout(0.2))
+        model.add(Dense(32, activation='relu'))
+        model.add(BatchNormalization())
+        model.add(Dropout(0.2))        
+        model.add(Dense(8, activation='softmax'))
 
         print(model.summary)
 
@@ -51,7 +51,7 @@ class TrainModel:
                       metrics=['accuracy'])
 
         cnn_history = model.fit(x_traincnn, y_train,
-                               batch_size=16, epochs=50,
+                               batch_size=16, epochs=20,
                                validation_data=(x_testcnn, y_test))
 
         # Loss plotting
@@ -73,7 +73,9 @@ class TrainModel:
         plt.legend(['train', 'test'], loc='upper left')
         plt.savefig('accuracy.png')
 
-        predictions = model.predict_classes(x_testcnn)
+        predictions = model.predict(x_testcnn)
+        predictions = np.argmax(predictions, axis=1)
+        
         new_y_test = y_test.astype(int)
         matrix = confusion_matrix(new_y_test, predictions)
 
@@ -92,6 +94,6 @@ class TrainModel:
 
 if __name__ == '__main__':
     print('Training started')
-    X = joblib.load(SAVE_DIR_PATH + '\\X.joblib')
-    y = joblib.load(SAVE_DIR_PATH + '\\y.joblib')
+    X = joblib.load(SAVE_DIR_PATH + '/X.joblib')
+    y = joblib.load(SAVE_DIR_PATH + '/y.joblib')
     NEURAL_NET = TrainModel.train_neural_network(X=X, y=y)
