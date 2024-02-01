@@ -15,7 +15,7 @@ class CreateFeatures:
     @staticmethod
     def features_creator(path, save_dir) -> str:
         lst = []
-        scaler = StandardScaler()  # For normalization
+        # scaler = StandardScaler()  # For normalization
 
         start_time = time.time()
 
@@ -29,9 +29,9 @@ class CreateFeatures:
             for file in files:
                 try:
                     X, sample_rate = librosa.load(os.path.join(subdir, file), res_type='kaiser_fast')
-                    mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40)
-                    mfccs_scaled = scaler.fit_transform(mfccs.T)  # Normalizing the MFCCs
-                    mfccs_mean = np.mean(mfccs_scaled, axis=0)
+                    mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T
+                    # mfccs_scaled = scaler.fit_transform(mfccs.T)  # Normalizing the MFCCs
+                    mfccs_mean = np.mean(mfccs, axis=0)
 
                     file = int(file[7:8]) - 1
                     arr = mfccs_mean, file
