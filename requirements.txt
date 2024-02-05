@@ -3,3 +3,4 @@ resampy
 matplotlib
 tensorflow
 tqdm
+flask
