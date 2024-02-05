@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Audio File</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        input[type="file"] {
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block'; // Show loading text
+            document.getElementById('submitBtn').disabled = true; // Disable submit button
+        }
+    </script>
+
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Audio File for Emotion Detection</h1>
+        
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+
+        <form action="" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+            <input type="file" name="file" required>
+            <input type="submit" value="Upload" id="submitBtn">
+            <div id="loading" class="loading">Loading...</div>
+        </form>
+        
+        {% if audio_name %}
+        <div class="audio-player">
+            <h2>Uploaded Audio:</h2>
+            <audio controls>
+                <source src="{{ url_for('static', filename=audio_name) }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        {% endif %}
+        
+        
+        {% if emotion %}
+            <div class="result">
+                <h2>Predicted Emotion: {{ emotion }}</h2>
+            </div>
+        {% endif %}
+        
+        {% if plot_name %}
+            <div class="result">
+                <img src="{{ url_for('static', filename=plot_name) }}" alt="Prediction Plot">
+            </div>
+        {% endif %}        
+    
+    </div>
+</body>
+</html>

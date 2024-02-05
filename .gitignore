@@ -9,3 +9,8 @@ __pycache__
 venv/*
 venv
 *.joblib
+*.png
+*.h5
+legacy_code/*
+static/*
+uploads/*
