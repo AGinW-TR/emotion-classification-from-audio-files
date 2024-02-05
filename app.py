@@ -33,7 +33,7 @@ def upload_file():
             
             # Predict emotion
             time.sleep(1)
-            emotion = 'sample output 2'
+            # emotion = 'sample output 2'
             plot_name = file.filename.split('.')[0] + '.jpg'
             audio_name = file.filename
 

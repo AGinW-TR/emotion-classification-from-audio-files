@@ -11,6 +11,11 @@ from config import TRAINING_FILES_PATH
 
 
 class CreateFeatures:
+    def __init__(self):
+        if not os.path.exists('static'): os.mkdir('static')
+        if not os.path.exists('joblib_features'): os.mkdir('joblib_features')
+        if not os.path.exists('uploads'): os.mkdir('uploads')
+        if not os.path.exists('figs'): os.mkdir('figs')
 
     @staticmethod
     def features_creator(path, save_dir) -> str:
